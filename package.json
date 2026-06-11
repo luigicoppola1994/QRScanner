@@ -1,0 +1,12 @@
+{
+  "name": "qr-scanner-its",
+  "version": "1.0.0",
+  "description": "Smart Badge ITS per Studenti",
+  "main": "index.html",
+  "scripts": {
+    "start": "echo 'Deploy on Vercel' && exit 0"
+  },
+  "dependencies": {
+    "@vercel/kv": "^3.0.0"
+  }
+}

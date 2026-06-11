@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Docente - Scansione Badge</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- html5-qrcode CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body class="dashboard-body">
+    <div class="dashboard">
+        <!-- Header -->
+        <header class="dash-header">
+            <div>
+                <h1>Pannello Docente</h1>
+                <p class="subtitle">Gestione presenze tramite QR Code</p>
+            </div>
+            <div class="status-badge">
+                <span class="status-dot"></span>
+                Webcam Pronta
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="dash-main">
+            <!-- Left Column: Scanner -->
+            <section class="card video-section">
+                <h2>Inquadra QR Code</h2>
+                <div class="scanner-container">
+                    <div id="reader"></div>
+                </div>
+            </section>
+
+            <!-- Right Column: Feedback -->
+            <section class="card feedback-section">
+                <h2>Ultimi Rilevamenti</h2>
+                <div id="feedback-area" class="feedback-area">
+                    <div class="empty-state" id="empty-state">
+                        <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <p>In attesa di scansioni...</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Script simulazione server -->
+    <script src="api-simulata.js"></script>
+    <script>
+        const feedbackArea = document.getElementById('feedback-area');
+        const emptyState = document.getElementById('empty-state');
+
+        // Callback quando il QR code viene letto con successo
+        function onScanSuccess(decodedText, decodedResult) {
+            const studentId = decodedText;
+            
+            // Evita scansioni multiple in rapida successione dello stesso codice
+            if (window.isRecentlyScanned(studentId)) {
+                return;
+            }
+
+            // Salva lo studente nel "database" locale (simulando il backend)
+            window.saveScannedStudent(studentId);
+
+            // Rimuovi lo stato vuoto se presente
+            if (emptyState && emptyState.parentNode) {
+                emptyState.parentNode.removeChild(emptyState);
+            }
+
+            // Aggiungi la notifica visiva nella dashboard
+            addFeedbackNotification(studentId);
+        }
+
+        function onScanFailure(error) {
+            // Errori di scansione continui avvengono normalmente finché non trova un QR
+            // Quindi li ignoriamo in silenzio per non intasare la console.
+        }
+
+        function addFeedbackNotification(studentId) {
+            const notification = document.createElement('div');
+            notification.className = 'scan-notification success-anim';
+            
+            const timeStr = new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            
+            notification.innerHTML = `
+                <div class="icon">✓</div>
+                <div class="details">
+                    <span class="title">Scansione riuscita</span>
+                    <span class="student-id">${studentId}</span>
+                </div>
+                <span class="time">${timeStr}</span>
+            `;
+
+            // Aggiungi in cima alla lista
+            feedbackArea.prepend(notification);
+        }
+
+        // Inizializza lo scanner
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader",
+            { 
+                fps: 10, 
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0,
+            },
+            /* verbose= */ false
+        );
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    </script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Badge ITS - Studente</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- qrcode.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <div id="app" class="mobile-app">
+        <!-- Schermata di Login -->
+        <div id="login-screen" class="screen active">
+            <div class="logo">ITS Smart Badge</div>
+            <h1>Accesso Studente</h1>
+            <p class="subtitle">Inserisci i tuoi dati per generare il badge di presenza.</p>
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="nome">Nome e Cognome</label>
+                    <input type="text" id="nome" required placeholder="Es: Mario Rossi">
+                </div>
+                <div class="input-group">
+                    <label for="studente-id">ID Studente</label>
+                    <input type="text" id="studente-id" required placeholder="Es: ITS-STUDENTE-123">
+                </div>
+                <button type="submit" class="btn primary">Genera Badge</button>
+            </form>
+        </div>
+
+        <!-- Schermata QR Code -->
+        <div id="qr-screen" class="screen">
+            <h2>Il tuo Badge</h2>
+            <div class="user-info">
+                <span id="display-nome"></span>
+            </div>
+            
+            <div class="qr-wrapper">
+                <div id="qrcode-container"></div>
+            </div>
+            
+            <p class="instruction">Mostra questo codice alla webcam del docente</p>
+            
+            <div class="status-indicator">
+                <div class="spinner"></div>
+                <p>In attesa di scansione da parte del docente...</p>
+            </div>
+
+            <!-- Bottone segreto per simulare la connessione locale senza server -->
+            <button id="secret-btn" class="btn secondary secret-btn">Simula Connessione Locale</button>
+        </div>
+
+        <!-- Schermata di Successo -->
+        <div id="success-screen" class="screen success">
+            <div class="success-icon">✓</div>
+            <h2>AVVIATO</h2>
+            <p>La tua presenza è stata registrata con successo.</p>
+            <button class="btn success-btn" onclick="location.reload()">Nuovo Accesso</button>
+        </div>
+    </div>
+
+    <!-- Script simulazione server -->
+    <script src="api-simulata.js"></script>
+    <script>
+        // Elementi DOM
+        const loginForm = document.getElementById('login-form');
+        const loginScreen = document.getElementById('login-screen');
+        const qrScreen = document.getElementById('qr-screen');
+        const successScreen = document.getElementById('success-screen');
+        const secretBtn = document.getElementById('secret-btn');
+        
+        let currentStudentId = '';
+        let pollingInterval = null;
+
+        // Gestione Login
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const nome = document.getElementById('nome').value;
+            currentStudentId = document.getElementById('studente-id').value;
+
+            document.getElementById('display-nome').textContent = nome;
+
+            // Pulisce e genera il QR Code
+            document.getElementById('qrcode-container').innerHTML = '';
+            new QRCode(document.getElementById("qrcode-container"), {
+                text: currentStudentId,
+                width: 220,
+                height: 220,
+                colorDark : "#111827",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+
+            // Transizione alla schermata QR
+            loginScreen.classList.remove('active');
+            qrScreen.classList.add('active');
+
+            // Avvia Polling per controllare lo stato
+            startPolling();
+        });
+
+        // Simulazione manuale
+        secretBtn.addEventListener('click', function() {
+            handleSuccess();
+        });
+
+        function startPolling() {
+            // Poiché questo file è servito dal vero backend Python appena creato, 
+            // possiamo usare il percorso relativo '/api/status'.
+            const serverUrl = '/api/status';
+
+            pollingInterval = setInterval(() => {
+                // Aggiungiamo un timestamp per evitare che Safari o Chrome su cellulare 
+                // peschino la risposta vecchia dalla cache del telefono.
+                fetch(`${serverUrl}?id=${currentStudentId}&t=${Date.now()}`, { cache: 'no-store' })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'IN_CORSO') {
+                            handleSuccess();
+                        }
+                    })
+                    .catch(err => console.log('In attesa del server...'));
+            }, 2000);
+        }
+
+        let activeTimerInterval = null;
+
+        function handleSuccess() {
+            if (pollingInterval) clearInterval(pollingInterval);
+            
+            // Cambia lo stato direttamente nella schermata del QR
+            const statusIndicator = document.querySelector('.status-indicator');
+            statusIndicator.classList.add('success-state');
+            statusIndicator.innerHTML = `
+                <div style="font-size: 1.2rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 1.5rem;">✓</span> ATTIVO
+                </div>
+                <p style="font-weight: 600; opacity: 0.9; margin-bottom: 0.25rem;">INGRESSO REGISTRATO</p>
+                <div style="font-size: 0.95rem; font-family: monospace; background: rgba(16, 185, 129, 0.2); color: var(--success); padding: 4px 12px; border-radius: 20px; font-weight: 600; border: 1px solid rgba(16, 185, 129, 0.3);">
+                    Tempo: <span id="active-timer">00:00</span>
+                </div>
+            `;
+
+            // Nascondiamo l'istruzione precedente
+            const instruction = document.querySelector('.instruction');
+            if (instruction) instruction.style.display = 'none';
+            
+            // Nascondiamo il tasto segreto per pulire l'interfaccia
+            secretBtn.style.display = 'none';
+
+            // Avvia il timer
+            const startTime = Date.now();
+            const timerEl = document.getElementById('active-timer');
+            
+            if (activeTimerInterval) clearInterval(activeTimerInterval);
+            activeTimerInterval = setInterval(() => {
+                const diffSecs = Math.floor((Date.now() - startTime) / 1000);
+                const m = Math.floor(diffSecs / 60).toString().padStart(2, '0');
+                const s = (diffSecs % 60).toString().padStart(2, '0');
+                if (timerEl) timerEl.textContent = `${m}:${s}`;
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
