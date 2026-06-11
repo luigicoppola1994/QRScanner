@@ -4,17 +4,146 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Badge ITS - Studente</title>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <!-- qrcode.js CDN -->
+    <style>
+        /* Anti-screenshot */
+        .no-screenshot {
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+        .qr-hidden .qr-wrapper {
+            filter: blur(30px) !important;
+            transition: filter 0.1s;
+        }
+        .qr-hidden .qr-shield-msg {
+            display: flex !important;
+        }
+        .qr-shield-msg {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(17, 24, 39, 0.85);
+            color: white;
+            font-weight: 700;
+            font-size: 0.95rem;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border-radius: var(--radius);
+            z-index: 10;
+            padding: 1rem;
+        }
+
+        /* Exit hint */
+        .exit-hint {
+            text-align: center;
+            color: var(--primary);
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-top: 0.75rem;
+            padding: 0.65rem 1rem;
+            background: rgba(79, 70, 229, 0.06);
+            border-radius: 10px;
+            border: 1px dashed rgba(79, 70, 229, 0.25);
+            display: none;
+        }
+        .exit-hint.visible {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        /* Improved student layout */
+        .mobile-app {
+            background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+        }
+
+        .logo-icon {
+            font-size: 1.6rem;
+        }
+
+        /* QR screen improvements */
+        #qr-screen h2 {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 0.25rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .user-info .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .qr-wrapper {
+            position: relative;
+            background: white;
+            padding: 1.25rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+            margin: 0.75rem auto 0 auto;
+            width: fit-content;
+        }
+
+        .instruction {
+            font-size: 0.85rem;
+            margin-top: 0.75rem;
+        }
+
+        /* Status indicator improvements */
+        .status-indicator {
+            margin-top: auto;
+            margin-bottom: 0.5rem;
+            padding: 1.25rem;
+            border-radius: 14px;
+            gap: 0.5rem;
+        }
+
+        .status-indicator p {
+            font-size: 0.85rem;
+        }
+
+        /* Exit screen style */
+        .exit-state {
+            background: linear-gradient(135deg, rgba(107, 114, 128, 0.08), rgba(107, 114, 128, 0.04)) !important;
+            color: #4b5563 !important;
+            border: 1px solid rgba(107, 114, 128, 0.15);
+        }
+    </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
     <div id="app" class="mobile-app">
         <!-- Schermata di Login -->
         <div id="login-screen" class="screen active">
-            <div class="logo">ITS Smart Badge</div>
+            <div class="logo">
+                <span class="logo-icon">🎓</span>
+                <span>ITS Smart Badge</span>
+            </div>
             <h1>Accesso Studente</h1>
             <p class="subtitle">Inserisci i tuoi dati per generare il badge di presenza.</p>
             <form id="login-form">
@@ -34,87 +163,79 @@
         <div id="qr-screen" class="screen">
             <h2>Il tuo Badge</h2>
             <div class="user-info">
+                <div class="user-avatar" id="user-avatar"></div>
                 <span id="display-nome"></span>
             </div>
             
             <div class="qr-wrapper">
-                <div id="qrcode-container"></div>
+                <div id="qrcode-container" class="no-screenshot"></div>
+                <div class="qr-shield-msg">⛔ Screenshot non consentito</div>
+            </div>
+
+            <div class="exit-hint" id="exit-hint">
+                📲 Per badgiare l'uscita, riscannerizza il QR dal docente
             </div>
             
             <p class="instruction">Mostra questo codice alla webcam del docente</p>
             
-            <div class="status-indicator">
+            <div class="status-indicator" id="status-indicator">
                 <div class="spinner"></div>
                 <p>In attesa di scansione da parte del docente...</p>
             </div>
-
-            <!-- Bottone segreto per simulare la connessione locale senza server -->
-            <button id="secret-btn" class="btn secondary secret-btn">Simula Connessione Locale</button>
-        </div>
-
-        <!-- Schermata di Successo -->
-        <div id="success-screen" class="screen success">
-            <div class="success-icon">✓</div>
-            <h2>AVVIATO</h2>
-            <p>La tua presenza è stata registrata con successo.</p>
-            <button class="btn success-btn" onclick="location.reload()">Nuovo Accesso</button>
         </div>
     </div>
 
-    <!-- Script simulazione server -->
     <script src="api-simulata.js"></script>
     <script>
-        // Elementi DOM
         const loginForm = document.getElementById('login-form');
         const loginScreen = document.getElementById('login-screen');
         const qrScreen = document.getElementById('qr-screen');
-        const successScreen = document.getElementById('success-screen');
-        const secretBtn = document.getElementById('secret-btn');
         
         let currentStudentId = '';
         let pollingInterval = null;
-        let currentVisualState = 'ATTESA'; // Track state
+        let currentVisualState = 'ATTESA';
+        let activeTimerInterval = null;
 
-        // Gestione Login
+        // Login
         loginForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const nome = document.getElementById('nome').value;
             currentStudentId = document.getElementById('studente-id').value;
 
             document.getElementById('display-nome').textContent = nome;
+            // Avatar con iniziale
+            document.getElementById('user-avatar').textContent = nome.charAt(0).toUpperCase();
 
-            // Pulisce e genera il QR Code
+            // Genera QR Code
             document.getElementById('qrcode-container').innerHTML = '';
             new QRCode(document.getElementById("qrcode-container"), {
                 text: currentStudentId,
-                width: 220,
-                height: 220,
+                width: 200,
+                height: 200,
                 colorDark : "#111827",
                 colorLight : "#ffffff",
                 correctLevel : QRCode.CorrectLevel.H
             });
 
-            // Transizione alla schermata QR
             loginScreen.classList.remove('active');
             qrScreen.classList.add('active');
 
-            // Avvia Polling per controllare lo stato
+            // Anti-screenshot
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    document.body.classList.add('qr-hidden');
+                } else {
+                    setTimeout(() => document.body.classList.remove('qr-hidden'), 300);
+                }
+            });
+            document.addEventListener('contextmenu', e => e.preventDefault());
+
             startPolling();
         });
 
-        // Simulazione manuale
-        secretBtn.addEventListener('click', function() {
-            handleSuccess();
-        });
-
         function startPolling() {
-            // Poiché questo file è servito dal vero backend Python appena creato, 
-            // possiamo usare il percorso relativo '/api/status'.
             const serverUrl = '/api/status';
-
             pollingInterval = setInterval(() => {
-                // Aggiungiamo un timestamp per evitare che Safari o Chrome su cellulare 
-                // peschino la risposta vecchia dalla cache del telefono.
                 fetch(`${serverUrl}?id=${currentStudentId}&t=${Date.now()}`, { cache: 'no-store' })
                     .then(res => res.json())
                     .then(data => {
@@ -130,30 +251,26 @@
             }, 2000);
         }
 
-        let activeTimerInterval = null;
-
         function handleSuccess() {
-            // Non interrompiamo il polling, perché ora dobbiamo aspettare l'uscita!
-            
-            // Cambia lo stato direttamente nella schermata del QR
-            const statusIndicator = document.querySelector('.status-indicator');
+            const statusIndicator = document.getElementById('status-indicator');
             statusIndicator.classList.add('success-state');
             statusIndicator.innerHTML = `
-                <div style="font-size: 1.2rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
-                    <span style="font-size: 1.5rem;">✓</span> ATTIVO
+                <div style="font-size: 1.1rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-size: 1.4rem;">✓</span> ATTIVO
                 </div>
-                <p style="font-weight: 600; opacity: 0.9; margin-bottom: 0.25rem;">INGRESSO REGISTRATO</p>
-                <div style="font-size: 0.95rem; font-family: monospace; background: rgba(16, 185, 129, 0.2); color: var(--success); padding: 4px 12px; border-radius: 20px; font-weight: 600; border: 1px solid rgba(16, 185, 129, 0.3);">
+                <p style="font-weight: 600; opacity: 0.9; margin-bottom: 0.15rem; font-size: 0.85rem;">INGRESSO REGISTRATO</p>
+                <div style="font-size: 0.9rem; font-family: 'Inter', monospace; background: rgba(16, 185, 129, 0.15); color: var(--success); padding: 4px 14px; border-radius: 20px; font-weight: 700; border: 1px solid rgba(16, 185, 129, 0.25);">
                     Tempo: <span id="active-timer">00:00</span>
                 </div>
             `;
 
+            // Mostra il suggerimento per l'uscita
+            const exitHint = document.getElementById('exit-hint');
+            if (exitHint) exitHint.classList.add('visible');
+
             // Nascondiamo l'istruzione precedente
             const instruction = document.querySelector('.instruction');
             if (instruction) instruction.style.display = 'none';
-            
-            // Nascondiamo il tasto segreto per pulire l'interfaccia
-            secretBtn.style.display = 'none';
 
             // Avvia il timer
             const startTime = Date.now();
@@ -172,25 +289,29 @@
             if (pollingInterval) clearInterval(pollingInterval);
             if (activeTimerInterval) clearInterval(activeTimerInterval);
             
-            const statusIndicator = document.querySelector('.status-indicator');
+            const statusIndicator = document.getElementById('status-indicator');
             statusIndicator.classList.remove('success-state');
+            statusIndicator.classList.add('exit-state');
             
             const timerEl = document.getElementById('active-timer');
             const finalTime = timerEl ? timerEl.textContent : "00:00";
 
+            // Nascondi exit hint
+            const exitHint = document.getElementById('exit-hint');
+            if (exitHint) exitHint.style.display = 'none';
+
             statusIndicator.innerHTML = `
-                <div style="font-size: 1.2rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; color: #4b5563;">
-                    <span style="font-size: 1.5rem;">👋</span> USCITA REGISTRATA
+                <div style="font-size: 1.1rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; color: #4b5563;">
+                    <span style="font-size: 1.4rem;">👋</span> USCITA REGISTRATA
                 </div>
-                <p style="font-weight: 600; opacity: 0.9; margin-bottom: 0.25rem;">Il tuo badge è stato disattivato.</p>
-                <div style="font-size: 0.95rem; font-family: monospace; background: rgba(107, 114, 128, 0.1); color: #374151; padding: 4px 12px; border-radius: 20px; font-weight: 600; border: 1px solid rgba(107, 114, 128, 0.3); margin-top: 5px;">
+                <p style="font-weight: 600; opacity: 0.9; margin-bottom: 0.15rem; font-size: 0.85rem; color: #6b7280;">Il tuo badge è stato disattivato.</p>
+                <div style="font-size: 0.9rem; font-family: 'Inter', monospace; background: rgba(107, 114, 128, 0.08); color: #374151; padding: 4px 14px; border-radius: 20px; font-weight: 700; border: 1px solid rgba(107, 114, 128, 0.2); margin-top: 4px;">
                     Tempo trascorso: <span>${finalTime}</span>
                 </div>
-                <button class="btn secondary" style="margin-top: 15px; width: 100%;" onclick="location.reload()">Nuovo Accesso</button>
+                <button class="btn secondary" style="margin-top: 12px; width: 100%; padding: 0.7rem;" onclick="location.reload()">Nuovo Accesso</button>
             `;
 
-            // Nascondiamo il QR code perché non serve più per l'uscita (è già uscito)
-            document.getElementById('qrcode-container').style.opacity = '0.2';
+            document.getElementById('qrcode-container').style.opacity = '0.15';
         }
     </script>
 </body>

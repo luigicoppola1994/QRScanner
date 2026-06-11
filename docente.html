@@ -3,127 +3,394 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Docente - Scansione Badge</title>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Registrazione Ingresso/Uscita - QR Scanner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <!-- html5-qrcode CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        .dashboard-body {
+            background: #f8fafc;
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        .dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+        }
+
+        /* Header */
+        .dash-header {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .dash-header h1 {
+            color: #1e293b;
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+
+        .dash-header .subtitle {
+            color: #64748b;
+            font-size: 0.875rem;
+            margin-bottom: 0;
+        }
+
+        .status-badge {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: #059669;
+        }
+
+        /* Counters */
+        .counters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .counter-card {
+            flex: 1;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 1.25rem 1.5rem;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .counter-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+
+        .counter-card .counter-value {
+            font-size: 2.25rem;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+        }
+
+        .counter-card .counter-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-top: 0.4rem;
+        }
+
+        .counter-card.entrata .counter-value { color: #059669; }
+        .counter-card.uscita .counter-value { color: #d97706; }
+        .counter-card.totale .counter-value { color: #4F46E5; }
+
+        /* Cards */
+        .card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card h2 {
+            color: #1e293b;
+            border-bottom: 1px solid #f1f5f9;
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 0;
+            flex-shrink: 0;
+        }
+
+        .card h2 .card-icon {
+            font-size: 1.1rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        /* Equalize card heights */
+        .dash-main {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            align-items: stretch;
+        }
+
+        .dash-main .card {
+            height: 520px;
+        }
+
+        /* Scanner */
+        .scanner-container {
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #e2e8f0;
+        }
+
+        #reader {
+            width: 100%;
+            border: none !important;
+        }
+
+        #reader button {
+            background: #4F46E5 !important;
+            color: white !important;
+            border: none !important;
+            padding: 0.75rem 1.5rem !important;
+            border-radius: 10px !important;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+            margin-bottom: 1rem;
+        }
+
+        #reader button:hover {
+            background: #4338CA !important;
+        }
+
+        #reader select {
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 1rem;
+            width: 100%;
+            font-family: inherit;
+        }
+
+        #reader__dashboard_section_csr span {
+            margin: 10px 0 !important;
+            display: block;
+        }
+
+        /* Feedback / Registro */
+        .feedback-area {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .scan-notification {
+            background: #fafbfc;
+            border: 1px solid #e2e8f0;
+            border-left-width: 4px;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .scan-notification:hover {
+            transform: translateX(3px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .scan-notification .icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .scan-notification .details {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+
+        .scan-notification .details .title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .scan-notification .student-id {
+            font-family: 'Inter', monospace;
+            font-size: 1rem;
+            color: #1e293b;
+            font-weight: 700;
+        }
+
+        .scan-notification .time {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 1rem;
+            color: #cbd5e1;
+            text-align: center;
+            gap: 0.75rem;
+        }
+
+        .empty-state svg { opacity: 0.4; }
+
+        .success-anim {
+            animation: slideInLeft 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 850px) {
+            .dashboard { padding: 1rem; }
+            .dash-main { grid-template-columns: 1fr; }
+            .dash-main .card { height: auto; max-height: 450px; }
+            .counters { gap: 0.5rem; }
+            .counter-card { padding: 1rem; }
+            .counter-card .counter-value { font-size: 1.75rem; }
+            .dash-header { flex-direction: column; gap: 0.75rem; align-items: flex-start; }
+        }
+    </style>
 </head>
 <body class="dashboard-body">
     <div class="dashboard">
-        <!-- Header -->
         <header class="dash-header">
             <div>
-                <h1>Pannello Docente</h1>
-                <p class="subtitle">Gestione presenze tramite QR Code</p>
+                <h1>📋 Registrazione Ingresso / Uscita</h1>
+                <p class="subtitle">Scansiona il QR Code dello studente per registrare ingresso o uscita</p>
             </div>
             <div class="status-badge">
                 <span class="status-dot"></span>
-                Webcam Pronta
+                Scanner Attivo
             </div>
         </header>
 
-        <!-- Main Content -->
+        <div class="counters">
+            <div class="counter-card entrata">
+                <div class="counter-value" id="count-entrata">0</div>
+                <div class="counter-label">Ingressi</div>
+            </div>
+            <div class="counter-card uscita">
+                <div class="counter-value" id="count-uscita">0</div>
+                <div class="counter-label">Uscite</div>
+            </div>
+            <div class="counter-card totale">
+                <div class="counter-value" id="count-totale">0</div>
+                <div class="counter-label">Totale</div>
+            </div>
+        </div>
+
         <main class="dash-main">
-            <!-- Left Column: Scanner -->
             <section class="card video-section">
-                <h2>Inquadra QR Code</h2>
-                <div class="scanner-container">
-                    <div id="reader"></div>
+                <h2><span class="card-icon">📷</span> Inquadra QR Code</h2>
+                <div class="card-body">
+                    <div class="scanner-container">
+                        <div id="reader"></div>
+                    </div>
                 </div>
             </section>
 
-            <!-- Right Column: Feedback -->
             <section class="card feedback-section">
-                <h2>Ultimi Rilevamenti</h2>
-                <div id="feedback-area" class="feedback-area">
-                    <div class="empty-state" id="empty-state">
-                        <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <p>In attesa di scansioni...</p>
+                <h2><span class="card-icon">📝</span> Registro Attività</h2>
+                <div class="card-body">
+                    <div id="feedback-area" class="feedback-area">
+                        <div class="empty-state" id="empty-state">
+                            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <p>In attesa di scansioni...</p>
+                        </div>
                     </div>
                 </div>
             </section>
         </main>
     </div>
 
-    <!-- Script simulazione server -->
     <script src="api-simulata.js"></script>
     <script>
         const feedbackArea = document.getElementById('feedback-area');
         const emptyState = document.getElementById('empty-state');
+        let countEntrata = 0;
+        let countUscita = 0;
 
-        // Callback quando il QR code viene letto con successo
         async function onScanSuccess(decodedText, decodedResult) {
             const studentId = decodedText;
-            
-            // Evita scansioni multiple in rapida successione dello stesso codice
-            if (window.isRecentlyScanned(studentId)) {
-                return;
-            }
+            if (window.isRecentlyScanned(studentId)) return;
+            if (window.markRecentlyScanned) window.markRecentlyScanned(studentId);
 
-            if(window.markRecentlyScanned) window.markRecentlyScanned(studentId);
-
-            // Rimuovi lo stato vuoto se presente
             if (emptyState && emptyState.parentNode) {
                 emptyState.parentNode.removeChild(emptyState);
             }
 
-            // Salva e attendi la risposta per sapere se è ENTRATA o USCITA
             const action = await window.saveScannedStudent(studentId);
 
-            // Aggiungi la notifica visiva nella dashboard
+            if (action === 'USCITA') countUscita++;
+            else countEntrata++;
+
+            document.getElementById('count-entrata').textContent = countEntrata;
+            document.getElementById('count-uscita').textContent = countUscita;
+            document.getElementById('count-totale').textContent = countEntrata + countUscita;
+
             addFeedbackNotification(studentId, action);
         }
 
-        function onScanFailure(error) {
-            // Errori di scansione continui avvengono normalmente finché non trova un QR
-        }
+        function onScanFailure(error) {}
 
         function addFeedbackNotification(studentId, action) {
             const notification = document.createElement('div');
             notification.className = 'scan-notification success-anim';
-            
             const timeStr = new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            
-            let icon = '✓';
-            let title = 'Ingresso registrato';
-            let colorStr = 'var(--success)';
-            let bgStr = 'rgba(16, 185, 129, 0.1)';
+
+            let icon = '✓', title = 'Ingresso registrato';
+            let colorStr = '#059669', bgStr = 'rgba(5, 150, 105, 0.08)', borderColor = '#059669';
 
             if (action === 'USCITA') {
-                icon = '👋';
-                title = 'Uscita registrata';
-                colorStr = '#f59e0b';
-                bgStr = 'rgba(245, 158, 11, 0.1)';
+                icon = '👋'; title = 'Uscita registrata';
+                colorStr = '#d97706'; bgStr = 'rgba(217, 119, 6, 0.08)'; borderColor = '#d97706';
             } else if (action === 'ERRORE') {
-                icon = '❌';
-                title = 'Errore server';
-                colorStr = '#ef4444';
+                icon = '❌'; title = 'Errore server';
+                colorStr = '#dc2626'; bgStr = 'rgba(220, 38, 38, 0.08)'; borderColor = '#dc2626';
             }
 
+            notification.style.borderLeftColor = borderColor;
             notification.innerHTML = `
-                <div class="icon" style="color: ${colorStr}; background: ${bgStr}; border-color: ${colorStr}">${icon}</div>
+                <div class="icon" style="color: ${colorStr}; background: ${bgStr};">${icon}</div>
                 <div class="details">
                     <span class="title" style="color: ${colorStr}">${title}</span>
                     <span class="student-id">${studentId}</span>
                 </div>
                 <span class="time">${timeStr}</span>
             `;
-
-            // Aggiungi in cima alla lista
             feedbackArea.prepend(notification);
         }
 
-        // Inizializza lo scanner
         let html5QrcodeScanner = new Html5QrcodeScanner(
             "reader",
-            { 
-                fps: 10, 
-                qrbox: { width: 250, height: 250 },
-                aspectRatio: 1.0,
-            },
-            /* verbose= */ false
+            { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
+            false
         );
         html5QrcodeScanner.render(onScanSuccess, onScanFailure);
     </script>
