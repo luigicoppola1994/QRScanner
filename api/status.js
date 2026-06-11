@@ -1,21 +1,31 @@
 import admin from 'firebase-admin';
 
-if (!admin.apps.length) {
-  try {
+function initFirebase() {
+  if (!admin.apps.length) {
+    let pk = process.env.FIREBASE_PRIVATE_KEY;
+    if (pk) {
+      pk = pk.replace(/^"|"$/g, '');
+      pk = pk.replace(/\\n/g, '\n');
+    }
+    
     admin.initializeApp({
       credential: admin.credential.cert({
         projectId: process.env.FIREBASE_PROJECT_ID,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
+        privateKey: pk,
       }),
       databaseURL: process.env.FIREBASE_DATABASE_URL
     });
-  } catch (error) {
-    console.error('Firebase initialization error', error.stack);
   }
 }
 
 export default async function handler(req, res) {
+  try {
+    initFirebase();
+  } catch (initErr) {
+    console.error("ERRORE CHIAVI FIREBASE:", initErr);
+    return res.status(200).json({ status: 'ATTESA', error: 'Errore configurazione chiavi Firebase' });
+  }
   // Disabilita la cache
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
