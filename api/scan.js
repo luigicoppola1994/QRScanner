@@ -42,9 +42,12 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'ID mancante' });
   }
 
+  // Sanitizzazione per chiavi Firebase (i punti '.' e altri caratteri speciali non sono ammessi)
+  const safeStudentId = studentId.replace(/\./g, ',').replace(/#/g, '-').replace(/\$/g, '-').replace(/\[/g, '-').replace(/\]/g, '-');
+
   try {
     const db = admin.database();
-    const ref = db.ref(`scansions/${studentId}`);
+    const ref = db.ref(`scansions/${safeStudentId}`);
     
     // Leggi stato attuale
     const snapshot = await ref.once('value');
