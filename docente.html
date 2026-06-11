@@ -54,7 +54,7 @@
         const emptyState = document.getElementById('empty-state');
 
         // Callback quando il QR code viene letto con successo
-        function onScanSuccess(decodedText, decodedResult) {
+        async function onScanSuccess(decodedText, decodedResult) {
             const studentId = decodedText;
             
             // Evita scansioni multiple in rapida successione dello stesso codice
@@ -62,33 +62,50 @@
                 return;
             }
 
-            // Salva lo studente nel "database" locale (simulando il backend)
-            window.saveScannedStudent(studentId);
+            if(window.markRecentlyScanned) window.markRecentlyScanned(studentId);
 
             // Rimuovi lo stato vuoto se presente
             if (emptyState && emptyState.parentNode) {
                 emptyState.parentNode.removeChild(emptyState);
             }
 
+            // Salva e attendi la risposta per sapere se è ENTRATA o USCITA
+            const action = await window.saveScannedStudent(studentId);
+
             // Aggiungi la notifica visiva nella dashboard
-            addFeedbackNotification(studentId);
+            addFeedbackNotification(studentId, action);
         }
 
         function onScanFailure(error) {
             // Errori di scansione continui avvengono normalmente finché non trova un QR
-            // Quindi li ignoriamo in silenzio per non intasare la console.
         }
 
-        function addFeedbackNotification(studentId) {
+        function addFeedbackNotification(studentId, action) {
             const notification = document.createElement('div');
             notification.className = 'scan-notification success-anim';
             
             const timeStr = new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             
+            let icon = '✓';
+            let title = 'Ingresso registrato';
+            let colorStr = 'var(--success)';
+            let bgStr = 'rgba(16, 185, 129, 0.1)';
+
+            if (action === 'USCITA') {
+                icon = '👋';
+                title = 'Uscita registrata';
+                colorStr = '#f59e0b';
+                bgStr = 'rgba(245, 158, 11, 0.1)';
+            } else if (action === 'ERRORE') {
+                icon = '❌';
+                title = 'Errore server';
+                colorStr = '#ef4444';
+            }
+
             notification.innerHTML = `
-                <div class="icon">✓</div>
+                <div class="icon" style="color: ${colorStr}; background: ${bgStr}; border-color: ${colorStr}">${icon}</div>
                 <div class="details">
-                    <span class="title">Scansione riuscita</span>
+                    <span class="title" style="color: ${colorStr}">${title}</span>
                     <span class="student-id">${studentId}</span>
                 </div>
                 <span class="time">${timeStr}</span>

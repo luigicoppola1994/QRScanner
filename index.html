@@ -73,6 +73,7 @@
         
         let currentStudentId = '';
         let pollingInterval = null;
+        let currentVisualState = 'ATTESA'; // Track state
 
         // Gestione Login
         loginForm.addEventListener('submit', function(e) {
@@ -117,8 +118,12 @@
                 fetch(`${serverUrl}?id=${currentStudentId}&t=${Date.now()}`, { cache: 'no-store' })
                     .then(res => res.json())
                     .then(data => {
-                        if (data.status === 'IN_CORSO') {
+                        if (data.status === 'IN_CORSO' && currentVisualState !== 'IN_CORSO') {
+                            currentVisualState = 'IN_CORSO';
                             handleSuccess();
+                        } else if (data.status === 'USCITA' && currentVisualState !== 'USCITA') {
+                            currentVisualState = 'USCITA';
+                            handleExit();
                         }
                     })
                     .catch(err => console.log('In attesa del server...'));
@@ -128,7 +133,7 @@
         let activeTimerInterval = null;
 
         function handleSuccess() {
-            if (pollingInterval) clearInterval(pollingInterval);
+            // Non interrompiamo il polling, perché ora dobbiamo aspettare l'uscita!
             
             // Cambia lo stato direttamente nella schermata del QR
             const statusIndicator = document.querySelector('.status-indicator');
@@ -161,6 +166,31 @@
                 const s = (diffSecs % 60).toString().padStart(2, '0');
                 if (timerEl) timerEl.textContent = `${m}:${s}`;
             }, 1000);
+        }
+
+        function handleExit() {
+            if (pollingInterval) clearInterval(pollingInterval);
+            if (activeTimerInterval) clearInterval(activeTimerInterval);
+            
+            const statusIndicator = document.querySelector('.status-indicator');
+            statusIndicator.classList.remove('success-state');
+            
+            const timerEl = document.getElementById('active-timer');
+            const finalTime = timerEl ? timerEl.textContent : "00:00";
+
+            statusIndicator.innerHTML = `
+                <div style="font-size: 1.2rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; color: #4b5563;">
+                    <span style="font-size: 1.5rem;">👋</span> USCITA REGISTRATA
+                </div>
+                <p style="font-weight: 600; opacity: 0.9; margin-bottom: 0.25rem;">Il tuo badge è stato disattivato.</p>
+                <div style="font-size: 0.95rem; font-family: monospace; background: rgba(107, 114, 128, 0.1); color: #374151; padding: 4px 12px; border-radius: 20px; font-weight: 600; border: 1px solid rgba(107, 114, 128, 0.3); margin-top: 5px;">
+                    Tempo trascorso: <span>${finalTime}</span>
+                </div>
+                <button class="btn secondary" style="margin-top: 15px; width: 100%;" onclick="location.reload()">Nuovo Accesso</button>
+            `;
+
+            // Nascondiamo il QR code perché non serve più per l'uscita (è già uscito)
+            document.getElementById('qrcode-container').style.opacity = '0.2';
         }
     </script>
 </body>

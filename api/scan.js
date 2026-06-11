@@ -46,14 +46,27 @@ export default async function handler(req, res) {
     const db = admin.database();
     const ref = db.ref(`scansions/${studentId}`);
     
+    // Leggi stato attuale
+    const snapshot = await ref.once('value');
+    const data = snapshot.val();
+    
+    let newStatus = 'IN_CORSO';
+    let action = 'ENTRATA';
+
+    // Se è già in corso, la nuova scansione diventa un'uscita
+    if (data && data.status === 'IN_CORSO') {
+      newStatus = 'USCITA';
+      action = 'USCITA';
+    }
+    
     // Salva lo stato su Firebase
     await ref.set({
-      status: 'IN_CORSO',
+      status: newStatus,
       timestamp: admin.database.ServerValue.TIMESTAMP
     });
     
-    console.log(`Studente scansionato registrato su Firebase: ${studentId}`);
-    return res.status(200).json({ success: true });
+    console.log(`Scansione registrata su Firebase: ${studentId} (${action})`);
+    return res.status(200).json({ success: true, action: action });
   } catch (error) {
     console.error('Errore durante il salvataggio su Firebase:', error);
     return res.status(500).json({ error: 'Errore interno del server' });

@@ -55,8 +55,8 @@ export default async function handler(req, res) {
     const snapshot = await ref.once('value');
     const data = snapshot.val();
 
-    if (data && data.status === 'IN_CORSO') {
-      return res.status(200).json({ status: 'IN_CORSO' });
+    if (data && data.status) {
+      return res.status(200).json({ status: data.status });
     } else {
       return res.status(200).json({ status: 'ATTESA' });
     }
