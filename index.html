@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Badge ITS - Studente</title>
+    <title>ITS Smart Management - Badge Studente</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
@@ -13,18 +14,24 @@
             user-select: none;
             -webkit-touch-callout: none;
         }
+
         .qr-hidden .qr-wrapper {
             filter: blur(30px) !important;
             transition: filter 0.1s;
         }
+
         .qr-hidden .qr-shield-msg {
             display: flex !important;
         }
+
         .qr-shield-msg {
             display: none;
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(17, 24, 39, 0.85);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(27, 58, 92, 0.9);
             color: white;
             font-weight: 700;
             font-size: 0.95rem;
@@ -44,37 +51,38 @@
             font-weight: 600;
             margin-top: 0.75rem;
             padding: 0.65rem 1rem;
-            background: rgba(79, 70, 229, 0.06);
+            background: rgba(52, 152, 219, 0.06);
             border-radius: 10px;
-            border: 1px dashed rgba(79, 70, 229, 0.25);
+            border: 1px dashed rgba(52, 152, 219, 0.25);
             display: none;
         }
+
         .exit-hint.visible {
             display: block;
             animation: fadeIn 0.4s ease-out;
         }
 
-        /* Improved student layout */
-        .mobile-app {
-            background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+        /* Login logo */
+        .login-logo {
+            width: 170px;
+            height: auto;
+            margin: 0 auto 1.25rem auto;
+            display: block;
+            transition: all 0.3s ease;
         }
 
-        .logo {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.4rem;
+        .login-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
         }
 
-        .logo-icon {
-            font-size: 1.6rem;
-        }
-
-        /* QR screen improvements */
+        /* QR screen */
         #qr-screen h2 {
-            font-size: 1.35rem;
+            font-size: 1.3rem;
             font-weight: 800;
-            color: var(--text-main);
             margin-bottom: 0.25rem;
         }
 
@@ -86,27 +94,21 @@
         }
 
         .user-info .user-avatar {
-            width: 32px;
-            height: 32px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary), var(--accent));
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
 
         .qr-wrapper {
             position: relative;
-            background: white;
-            padding: 1.25rem;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-            border: 1px solid #e2e8f0;
             margin: 0.75rem auto 0 auto;
-            width: fit-content;
         }
 
         .instruction {
@@ -114,12 +116,10 @@
             margin-top: 0.75rem;
         }
 
-        /* Status indicator improvements */
         .status-indicator {
             margin-top: auto;
             margin-bottom: 0.5rem;
             padding: 1.25rem;
-            border-radius: 14px;
             gap: 0.5rem;
         }
 
@@ -127,46 +127,109 @@
             font-size: 0.85rem;
         }
 
-        /* Exit screen style */
         .exit-state {
-            background: linear-gradient(135deg, rgba(107, 114, 128, 0.08), rgba(107, 114, 128, 0.04)) !important;
-            color: #4b5563 !important;
-            border: 1px solid rgba(107, 114, 128, 0.15);
+            background: rgba(123, 143, 163, 0.08) !important;
+            color: #5a6b7d !important;
+            border: 1px solid rgba(123, 143, 163, 0.15);
+        }
+
+        /* Password toggle */
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-wrapper input {
+            padding-right: 3rem;
+        }
+
+        .toggle-pw {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            padding: 4px;
+            width: auto;
+        }
+
+        /* Mini logo on QR screen */
+        .qr-screen-logo {
+            width: 85px;
+            height: auto;
+            margin: 0 auto 0.5rem auto;
+            display: block;
+            opacity: 0.85;
+            transition: all 0.3s ease;
+        }
+
+        /* Responsive per dispositivi mobile */
+        @media (max-width: 480px) {
+            .mobile-app {
+                height: 100vh;
+                height: 100dvh;
+                border-radius: 0;
+                box-shadow: none;
+            }
+
+            .screen {
+                padding: 2rem 1.5rem;
+                overflow-y: auto;
+            }
+
+            .login-logo {
+                width: 140px;
+                margin-bottom: 1rem;
+            }
+
+            .qr-screen-logo {
+                width: 75px;
+            }
+
+            .status-indicator {
+                padding: 1rem;
+                margin-top: 1rem;
+            }
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
+
 <body>
     <div id="app" class="mobile-app">
         <!-- Schermata di Login -->
         <div id="login-screen" class="screen active">
-            <div class="logo">
-                <span class="logo-icon">🎓</span>
-                <span>ITS Smart Badge</span>
-            </div>
-            <h1>Accesso Studente</h1>
-            <p class="subtitle">Inserisci i tuoi dati per generare il badge di presenza.</p>
+            <img src="logoitsmanagement.png" alt="ITS Smart Management" class="login-logo">
+            <h1 style="font-size: 1.5rem;">Accesso Timbratura </h1>
+            <p class="subtitle">Accedi con le tue credenziali per registrare la tua presenza.</p>
             <form id="login-form">
                 <div class="input-group">
-                    <label for="nome">Nome e Cognome</label>
-                    <input type="text" id="nome" required placeholder="Es: Mario Rossi">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required placeholder="nome.cognome@studenti.its.it">
                 </div>
                 <div class="input-group">
-                    <label for="studente-id">ID Studente</label>
-                    <input type="text" id="studente-id" required placeholder="Es: ITS-STUDENTE-123">
+                    <label for="password">Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" required placeholder="Inserisci la password">
+                        <button type="button" class="toggle-pw" onclick="togglePassword()">👁️</button>
+                    </div>
                 </div>
-                <button type="submit" class="btn primary">Genera Badge</button>
+                <button type="submit" class="btn primary">Accedi</button>
             </form>
         </div>
 
         <!-- Schermata QR Code -->
         <div id="qr-screen" class="screen">
+            <img src="logoitsmanagement.png" alt="Logo" class="qr-screen-logo">
             <h2>Il tuo Badge</h2>
             <div class="user-info">
                 <div class="user-avatar" id="user-avatar"></div>
                 <span id="display-nome"></span>
             </div>
-            
+
             <div class="qr-wrapper">
                 <div id="qrcode-container" class="no-screenshot"></div>
                 <div class="qr-shield-msg">⛔ Screenshot non consentito</div>
@@ -175,9 +238,9 @@
             <div class="exit-hint" id="exit-hint">
                 📲 Per badgiare l'uscita, riscannerizza il QR dal docente
             </div>
-            
+
             <p class="instruction">Mostra questo codice alla webcam del docente</p>
-            
+
             <div class="status-indicator" id="status-indicator">
                 <div class="spinner"></div>
                 <p>In attesa di scansione da parte del docente...</p>
@@ -190,21 +253,34 @@
         const loginForm = document.getElementById('login-form');
         const loginScreen = document.getElementById('login-screen');
         const qrScreen = document.getElementById('qr-screen');
-        
+
         let currentStudentId = '';
         let pollingInterval = null;
         let currentVisualState = 'ATTESA';
         let activeTimerInterval = null;
 
-        // Login
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const nome = document.getElementById('nome').value;
-            currentStudentId = document.getElementById('studente-id').value;
+        function togglePassword() {
+            const pw = document.getElementById('password');
+            const btn = document.querySelector('.toggle-pw');
+            if (pw.type === 'password') {
+                pw.type = 'text';
+                btn.textContent = '🙈';
+            } else {
+                pw.type = 'password';
+                btn.textContent = '👁️';
+            }
+        }
 
-            document.getElementById('display-nome').textContent = nome;
-            // Avatar con iniziale
-            document.getElementById('user-avatar').textContent = nome.charAt(0).toUpperCase();
+        // Login - qualsiasi email/password va bene
+        loginForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            currentStudentId = email; // L'email diventa l'ID per il QR
+
+            // Mostra il nome (parte prima della @)
+            const displayName = email.split('@')[0].replace(/[._]/g, ' ');
+            document.getElementById('display-nome').textContent = displayName;
+            document.getElementById('user-avatar').textContent = displayName.charAt(0).toUpperCase();
 
             // Genera QR Code
             document.getElementById('qrcode-container').innerHTML = '';
@@ -212,9 +288,9 @@
                 text: currentStudentId,
                 width: 200,
                 height: 200,
-                colorDark : "#111827",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
+                colorDark: "#1B3A5C",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
             });
 
             loginScreen.classList.remove('active');
@@ -230,13 +306,23 @@
             });
             document.addEventListener('contextmenu', e => e.preventDefault());
 
-            startPolling();
+            // Resetta lo stato del badge su Firebase prima di avviare il polling
+            fetch(`/api/status?id=${encodeURIComponent(currentStudentId)}&reset=true&t=${Date.now()}`, { cache: 'no-store' })
+                .then(() => {
+                    currentVisualState = 'ATTESA';
+                    startPolling();
+                })
+                .catch(err => {
+                    console.log("Errore reset stato, avvio polling comunque...", err);
+                    currentVisualState = 'ATTESA';
+                    startPolling();
+                });
         });
 
         function startPolling() {
             const serverUrl = '/api/status';
             pollingInterval = setInterval(() => {
-                fetch(`${serverUrl}?id=${currentStudentId}&t=${Date.now()}`, { cache: 'no-store' })
+                fetch(`${serverUrl}?id=${encodeURIComponent(currentStudentId)}&t=${Date.now()}`, { cache: 'no-store' })
                     .then(res => res.json())
                     .then(data => {
                         if (data.status === 'IN_CORSO' && currentVisualState !== 'IN_CORSO') {
@@ -259,23 +345,20 @@
                     <span style="font-size: 1.4rem;">✓</span> ATTIVO
                 </div>
                 <p style="font-weight: 600; opacity: 0.9; margin-bottom: 0.15rem; font-size: 0.85rem;">INGRESSO REGISTRATO</p>
-                <div style="font-size: 0.9rem; font-family: 'Inter', monospace; background: rgba(16, 185, 129, 0.15); color: var(--success); padding: 4px 14px; border-radius: 20px; font-weight: 700; border: 1px solid rgba(16, 185, 129, 0.25);">
+                <div style="font-size: 0.9rem; font-family: 'Inter', monospace; background: rgba(39, 174, 96, 0.12); color: var(--success); padding: 4px 14px; border-radius: 20px; font-weight: 700; border: 1px solid rgba(39, 174, 96, 0.2);">
                     Tempo: <span id="active-timer">00:00</span>
                 </div>
             `;
 
-            // Mostra il suggerimento per l'uscita
             const exitHint = document.getElementById('exit-hint');
             if (exitHint) exitHint.classList.add('visible');
 
-            // Nascondiamo l'istruzione precedente
             const instruction = document.querySelector('.instruction');
             if (instruction) instruction.style.display = 'none';
 
-            // Avvia il timer
             const startTime = Date.now();
             const timerEl = document.getElementById('active-timer');
-            
+
             if (activeTimerInterval) clearInterval(activeTimerInterval);
             activeTimerInterval = setInterval(() => {
                 const diffSecs = Math.floor((Date.now() - startTime) / 1000);
@@ -288,15 +371,14 @@
         function handleExit() {
             if (pollingInterval) clearInterval(pollingInterval);
             if (activeTimerInterval) clearInterval(activeTimerInterval);
-            
+
             const statusIndicator = document.getElementById('status-indicator');
             statusIndicator.classList.remove('success-state');
             statusIndicator.classList.add('exit-state');
-            
+
             const timerEl = document.getElementById('active-timer');
             const finalTime = timerEl ? timerEl.textContent : "00:00";
 
-            // Nascondi exit hint
             const exitHint = document.getElementById('exit-hint');
             if (exitHint) exitHint.style.display = 'none';
 
@@ -305,7 +387,7 @@
                     <span style="font-size: 1.4rem;">👋</span> USCITA REGISTRATA
                 </div>
                 <p style="font-weight: 600; opacity: 0.9; margin-bottom: 0.15rem; font-size: 0.85rem; color: #6b7280;">Il tuo badge è stato disattivato.</p>
-                <div style="font-size: 0.9rem; font-family: 'Inter', monospace; background: rgba(107, 114, 128, 0.08); color: #374151; padding: 4px 14px; border-radius: 20px; font-weight: 700; border: 1px solid rgba(107, 114, 128, 0.2); margin-top: 4px;">
+                <div style="font-size: 0.9rem; font-family: 'Inter', monospace; background: rgba(123, 143, 163, 0.08); color: #374151; padding: 4px 14px; border-radius: 20px; font-weight: 700; border: 1px solid rgba(123, 143, 163, 0.2); margin-top: 4px;">
                     Tempo trascorso: <span>${finalTime}</span>
                 </div>
                 <button class="btn secondary" style="margin-top: 12px; width: 100%; padding: 0.7rem;" onclick="location.reload()">Nuovo Accesso</button>
@@ -315,4 +397,5 @@
         }
     </script>
 </body>
+
 </html>

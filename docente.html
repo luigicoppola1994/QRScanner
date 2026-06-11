@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrazione Ingresso/Uscita - QR Scanner</title>
+    <title>ITS Smart Management - Registrazione Ingresso/Uscita</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <style>
         .dashboard-body {
-            background: #f8fafc;
+            background: var(--bg-color);
             min-height: 100vh;
             padding: 0;
         }
@@ -23,30 +23,39 @@
         /* Header */
         .dash-header {
             background: white;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 1.5rem 2rem;
+            padding: 1.25rem 2rem;
             margin-bottom: 1.25rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .dash-header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .dash-logo {
+            width: 48px;
+            height: auto;
         }
 
         .dash-header h1 {
-            color: #1e293b;
-            font-size: 1.5rem;
+            font-size: 1.35rem;
             font-weight: 800;
-            letter-spacing: -0.03em;
+            margin-bottom: 0.1rem;
         }
 
         .dash-header .subtitle {
-            color: #64748b;
-            font-size: 0.875rem;
+            font-size: 0.85rem;
             margin-bottom: 0;
         }
 
         .status-badge {
-            background: rgba(16, 185, 129, 0.08);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            color: #059669;
+            background: rgba(39, 174, 96, 0.06);
+            border: 1px solid rgba(39, 174, 96, 0.15);
+            color: var(--success);
         }
 
         /* Counters */
@@ -59,17 +68,17 @@
         .counter-card {
             flex: 1;
             background: white;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--border);
             border-radius: 14px;
             padding: 1.25rem 1.5rem;
             text-align: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            box-shadow: var(--shadow-sm);
             transition: transform 0.2s, box-shadow 0.2s;
         }
 
         .counter-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            box-shadow: var(--shadow-md);
         }
 
         .counter-card .counter-value {
@@ -81,42 +90,38 @@
 
         .counter-card .counter-label {
             font-size: 0.75rem;
-            color: #94a3b8;
+            color: var(--text-muted);
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.06em;
             margin-top: 0.4rem;
         }
 
-        .counter-card.entrata .counter-value { color: #059669; }
-        .counter-card.uscita .counter-value { color: #d97706; }
-        .counter-card.totale .counter-value { color: #4F46E5; }
+        .counter-card.entrata .counter-value { color: var(--success); }
+        .counter-card.uscita .counter-value { color: var(--warning); }
+        .counter-card.totale .counter-value { color: var(--accent); }
 
         /* Cards */
         .card {
             background: white;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--border);
             border-radius: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            box-shadow: var(--shadow-sm);
             display: flex;
             flex-direction: column;
         }
 
         .card h2 {
-            color: #1e293b;
-            border-bottom: 1px solid #f1f5f9;
+            color: var(--primary);
+            border-bottom: 1px solid var(--bg-color);
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
             padding: 1.25rem 1.5rem;
             margin-bottom: 0;
             flex-shrink: 0;
-        }
-
-        .card h2 .card-icon {
-            font-size: 1.1rem;
         }
 
         .card-body {
@@ -126,7 +131,7 @@
             min-height: 0;
         }
 
-        /* Equalize card heights */
+        /* Equal height cards */
         .dash-main {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -142,34 +147,30 @@
         .scanner-container {
             border-radius: 12px;
             overflow: hidden;
-            border: 2px solid #e2e8f0;
+            border: 2px solid var(--border);
         }
 
-        #reader {
-            width: 100%;
-            border: none !important;
-        }
+        #reader { width: 100%; border: none !important; }
 
         #reader button {
-            background: #4F46E5 !important;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light)) !important;
             color: white !important;
             border: none !important;
             padding: 0.75rem 1.5rem !important;
             border-radius: 10px !important;
             cursor: pointer;
             font-weight: 600;
-            transition: background 0.2s;
             margin-bottom: 1rem;
         }
 
         #reader button:hover {
-            background: #4338CA !important;
+            background: linear-gradient(135deg, var(--primary-hover), var(--primary)) !important;
         }
 
         #reader select {
             padding: 0.75rem;
             border-radius: 8px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--border);
             margin-bottom: 1rem;
             width: 100%;
             font-family: inherit;
@@ -180,7 +181,7 @@
             display: block;
         }
 
-        /* Feedback / Registro */
+        /* Feedback */
         .feedback-area {
             display: flex;
             flex-direction: column;
@@ -188,8 +189,8 @@
         }
 
         .scan-notification {
-            background: #fafbfc;
-            border: 1px solid #e2e8f0;
+            background: var(--bg-color);
+            border: 1px solid var(--border);
             border-left-width: 4px;
             border-radius: 12px;
             padding: 1rem 1.25rem;
@@ -201,7 +202,7 @@
 
         .scan-notification:hover {
             transform: translateX(3px);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: var(--shadow-sm);
         }
 
         .scan-notification .icon {
@@ -230,16 +231,21 @@
             letter-spacing: 0.04em;
         }
 
-        .scan-notification .student-id {
-            font-family: 'Inter', monospace;
-            font-size: 1rem;
-            color: #1e293b;
+        .scan-notification .student-name {
+            font-size: 0.95rem;
+            color: var(--primary);
             font-weight: 700;
         }
 
-        .scan-notification .time {
+        .scan-notification .student-id {
             font-size: 0.8rem;
-            color: #94a3b8;
+            color: var(--text-muted);
+        }
+
+        .scan-notification .time {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary);
             font-variant-numeric: tabular-nums;
         }
 
@@ -249,12 +255,12 @@
             align-items: center;
             justify-content: center;
             padding: 3rem 1rem;
-            color: #cbd5e1;
+            color: var(--text-muted);
             text-align: center;
             gap: 0.75rem;
         }
 
-        .empty-state svg { opacity: 0.4; }
+        .empty-state svg { opacity: 0.35; color: var(--text-muted); }
 
         .success-anim {
             animation: slideInLeft 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
@@ -264,6 +270,11 @@
             from { opacity: 0; transform: translateX(-20px); }
             to { opacity: 1; transform: translateX(0); }
         }
+
+        /* Custom Scrollbar */
+        .card-body::-webkit-scrollbar { width: 5px; }
+        .card-body::-webkit-scrollbar-track { background: transparent; }
+        .card-body::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 20px; }
 
         /* Responsive */
         @media (max-width: 850px) {
@@ -280,9 +291,12 @@
 <body class="dashboard-body">
     <div class="dashboard">
         <header class="dash-header">
-            <div>
-                <h1>📋 Registrazione Ingresso / Uscita</h1>
-                <p class="subtitle">Scansiona il QR Code dello studente per registrare ingresso o uscita</p>
+            <div class="dash-header-left">
+                <img src="logoitsmanagement.png" alt="ITS Smart Management" class="dash-logo">
+                <div>
+                    <h1>Registrazione Ingresso / Uscita</h1>
+                    <p class="subtitle">Scansiona il QR Code dello studente per registrare ingresso o uscita</p>
+                </div>
             </div>
             <div class="status-badge">
                 <span class="status-dot"></span>
@@ -307,7 +321,7 @@
 
         <main class="dash-main">
             <section class="card video-section">
-                <h2><span class="card-icon">📷</span> Inquadra QR Code</h2>
+                <h2>📷 Inquadra QR Code</h2>
                 <div class="card-body">
                     <div class="scanner-container">
                         <div id="reader"></div>
@@ -316,7 +330,7 @@
             </section>
 
             <section class="card feedback-section">
-                <h2><span class="card-icon">📝</span> Registro Attività</h2>
+                <h2>📝 Registro Attività</h2>
                 <div class="card-body">
                     <div id="feedback-area" class="feedback-area">
                         <div class="empty-state" id="empty-state">
@@ -359,20 +373,40 @@
 
         function onScanFailure(error) {}
 
+        function getStudentName(email) {
+            if (!email) return 'Studente';
+            if (!email.includes('@')) return email;
+            
+            const localPart = email.split('@')[0];
+            const nameParts = localPart.split(/[._-]/);
+            
+            return nameParts
+                .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+                .filter(Boolean)
+                .join(' ');
+        }
+
         function addFeedbackNotification(studentId, action) {
             const notification = document.createElement('div');
             notification.className = 'scan-notification success-anim';
-            const timeStr = new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            
+            // Orario con tolleranza di 30 minuti (00-29 -> 00, 30-59 -> 30)
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes() < 30 ? '00' : '30';
+            const timeStr = `${hours}:${minutes}`;
+
+            const fullName = getStudentName(studentId);
 
             let icon = '✓', title = 'Ingresso registrato';
-            let colorStr = '#059669', bgStr = 'rgba(5, 150, 105, 0.08)', borderColor = '#059669';
+            let colorStr = 'var(--success)', bgStr = 'rgba(39, 174, 96, 0.08)', borderColor = 'var(--success)';
 
             if (action === 'USCITA') {
                 icon = '👋'; title = 'Uscita registrata';
-                colorStr = '#d97706'; bgStr = 'rgba(217, 119, 6, 0.08)'; borderColor = '#d97706';
+                colorStr = 'var(--warning)'; bgStr = 'rgba(212, 160, 23, 0.08)'; borderColor = 'var(--warning)';
             } else if (action === 'ERRORE') {
                 icon = '❌'; title = 'Errore server';
-                colorStr = '#dc2626'; bgStr = 'rgba(220, 38, 38, 0.08)'; borderColor = '#dc2626';
+                colorStr = 'var(--danger)'; bgStr = 'rgba(192, 57, 43, 0.08)'; borderColor = 'var(--danger)';
             }
 
             notification.style.borderLeftColor = borderColor;
@@ -380,6 +414,7 @@
                 <div class="icon" style="color: ${colorStr}; background: ${bgStr};">${icon}</div>
                 <div class="details">
                     <span class="title" style="color: ${colorStr}">${title}</span>
+                    <span class="student-name">${fullName}</span>
                     <span class="student-id">${studentId}</span>
                 </div>
                 <span class="time">${timeStr}</span>

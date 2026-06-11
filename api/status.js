@@ -42,6 +42,7 @@ export default async function handler(req, res) {
   }
 
   const studentId = req.query.id;
+  const reset = req.query.reset;
 
   if (!studentId) {
     return res.status(400).json({ error: 'ID mancante' });
@@ -50,6 +51,14 @@ export default async function handler(req, res) {
   try {
     const db = admin.database();
     const ref = db.ref(`scansions/${studentId}`);
+    
+    if (reset === 'true') {
+      await ref.set({
+        status: 'ATTESA',
+        timestamp: admin.database.ServerValue.TIMESTAMP
+      });
+      return res.status(200).json({ status: 'ATTESA' });
+    }
     
     // Leggi lo stato da Firebase
     const snapshot = await ref.once('value');
@@ -61,7 +70,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ status: 'ATTESA' });
     }
   } catch (error) {
-    console.error('Errore durante la lettura da Firebase:', error);
+    console.error('Errore durante la lettura o scrittura su Firebase:', error);
     return res.status(200).json({ status: 'ATTESA', error: 'Errore DB' });
   }
 }
