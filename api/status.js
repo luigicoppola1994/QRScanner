@@ -1,7 +1,22 @@
-import { kv } from '@vercel/kv';
+import admin from 'firebase-admin';
+
+if (!admin.apps.length) {
+  try {
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
+      }),
+      databaseURL: process.env.FIREBASE_DATABASE_URL
+    });
+  } catch (error) {
+    console.error('Firebase initialization error', error.stack);
+  }
+}
 
 export default async function handler(req, res) {
-  // Disabilita la cache per evitare che il cellulare legga dati vecchi
+  // Disabilita la cache
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
@@ -23,18 +38,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Leggi lo stato dal database KV
-    const status = await kv.get(`status_${studentId}`);
+    const db = admin.database();
+    const ref = db.ref(`scansions/${studentId}`);
+    
+    // Leggi lo stato da Firebase
+    const snapshot = await ref.once('value');
+    const data = snapshot.val();
 
-    if (status === 'IN_CORSO') {
+    if (data && data.status === 'IN_CORSO') {
       return res.status(200).json({ status: 'IN_CORSO' });
     } else {
       return res.status(200).json({ status: 'ATTESA' });
     }
   } catch (error) {
-    console.error('Errore durante la lettura da KV:', error);
-    // Anche in caso di errore, rispondiamo in ATTESA per non bloccare il client, 
-    // o con 500 se preferiamo. Usiamo ATTESA per continuità.
-    return res.status(200).json({ status: 'ATTESA', error: 'Errore KV' });
+    console.error('Errore durante la lettura da Firebase:', error);
+    return res.status(200).json({ status: 'ATTESA', error: 'Errore DB' });
   }
 }

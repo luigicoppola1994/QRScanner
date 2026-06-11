@@ -1,4 +1,21 @@
-import { kv } from '@vercel/kv';
+import admin from 'firebase-admin';
+
+// Inizializza Firebase solo se non è già stato fatto (fondamentale per Vercel)
+if (!admin.apps.length) {
+  try {
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        // Sostituisce i caratteri di a-capo se la variabile di ambiente li ha formattati male
+        privateKey: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
+      }),
+      databaseURL: process.env.FIREBASE_DATABASE_URL
+    });
+  } catch (error) {
+    console.error('Firebase initialization error', error.stack);
+  }
+}
 
 export default async function handler(req, res) {
   // CORS Headers
@@ -10,7 +27,6 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // Leggi l'ID dallo URL /api/scan?id=...
   const studentId = req.query.id;
 
   if (!studentId) {
@@ -18,14 +34,19 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Salva l'ID nel database Vercel KV con scadenza di 2 ore (7200 secondi)
-    // Impostiamo lo stato su "IN_CORSO"
-    await kv.set(`status_${studentId}`, 'IN_CORSO', { ex: 7200 });
+    const db = admin.database();
+    const ref = db.ref(`scansions/${studentId}`);
     
-    console.log(`Studente scansionato registrato in KV: ${studentId}`);
+    // Salva lo stato su Firebase
+    await ref.set({
+      status: 'IN_CORSO',
+      timestamp: admin.database.ServerValue.TIMESTAMP
+    });
+    
+    console.log(`Studente scansionato registrato su Firebase: ${studentId}`);
     return res.status(200).json({ success: true });
   } catch (error) {
-    console.error('Errore durante il salvataggio in KV:', error);
+    console.error('Errore durante il salvataggio su Firebase:', error);
     return res.status(500).json({ error: 'Errore interno del server' });
   }
 }
