@@ -390,11 +390,28 @@
             const notification = document.createElement('div');
             notification.className = 'scan-notification success-anim';
             
-            // Orario con tolleranza di 30 minuti (00-29 -> 00, 30-59 -> 30)
+            let timeStr = '';
             const now = new Date();
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes() < 30 ? '00' : '30';
-            const timeStr = `${hours}:${minutes}`;
+            if (action === 'USCITA') {
+                // Uscita: arrotondamento per eccesso (00:01-00:30 -> 00:30, 00:31-00:59 -> 01:00)
+                const currentMinutes = now.getMinutes();
+                if (currentMinutes === 0) {
+                    const hours = now.getHours().toString().padStart(2, '0');
+                    timeStr = `${hours}:00`;
+                } else if (currentMinutes <= 30) {
+                    const hours = now.getHours().toString().padStart(2, '0');
+                    timeStr = `${hours}:30`;
+                } else {
+                    now.setHours(now.getHours() + 1);
+                    const hours = now.getHours().toString().padStart(2, '0');
+                    timeStr = `${hours}:00`;
+                }
+            } else {
+                // Ingresso: arrotondamento per difetto (00:00-00:29 -> 00:00, 00:30-00:59 -> 00:30)
+                const hours = now.getHours().toString().padStart(2, '0');
+                const minutes = now.getMinutes() < 30 ? '00' : '30';
+                timeStr = `${hours}:${minutes}`;
+            }
 
             const fullName = getStudentName(studentId);
 
